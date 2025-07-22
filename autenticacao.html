@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CRUD</title>
+</head>
+<body>
+  <h1>Verificando autenticação...</h1>
+
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    // Configure o Supabase
+    const supabaseUrl = 'https://xmnvewpfsjvccwbmoura.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhtbnZld3Bmc2p2Y2N3Ym1vdXJhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MzE4Mzc1NCwiZXhwIjoyMDY4NzU5NzU0fQ.DWNu63dZvgHizzwZTrocI_H4aRTVdc7l0uHP3arSXOc';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // Verifica se o usuário está autenticado
+    const checkUser = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+
+      if (!session || error) {
+        // Não autenticado — redirecionar
+        alert('Você precisa estar logado para acessar esta página.');
+        window.location.href = '/'; // Página de login
+      } else {
+        // Usuário autenticado
+        document.body.innerHTML = `
+          <h1>CRUD</h1>
+          <p>Bem-vindo, ${session.user.email}</p>
+          <button id="logout">Sair</button>
+        `;
+
+        // Botão de logout
+        document.getElementById('logout').addEventListener('click', async () => {
+          await supabase.auth.signOut();
+          window.location.href = '/login.html';
+        });
+      }
+    };
+
+    checkUser();
+  </script>
+</body>
+</html>
+
