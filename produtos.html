@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <title>Produtos Cadastrados</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 40px; 
+            background: #f7f8fa;
+        }
+        h2 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 32px;
+        }
+        #lista {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            justify-content: center;
+        }
+        .produto {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px #0001;
+            padding: 24px 20px 18px 20px;
+            width: 320px;
+            transition: transform 0.15s, box-shadow 0.15s;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .produto:hover {
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 6px 24px #0002;
+        }
+        .produto h3 {
+            margin: 0 0 10px 0;
+            color: #2563eb;
+            font-size: 1.3em;
+            font-weight: 700;
+        }
+        .preco {
+            color: #059669;
+            font-size: 1.15em;
+            font-weight: bold;
+            margin-bottom: 8px;
+            background: #ecfdf5;
+            padding: 4px 12px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+        .produto p {
+            margin: 4px 0;
+            color: #444;
+            font-size: 1em;
+        }
+        .descricao {
+            color: #64748b;
+            font-size: 0.98em;
+            margin-top: 6px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Produtos Cadastrados</h2>
+    <div id="lista"></div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+        const supabaseUrl = 'https://xmnvewpfsjvccwbmoura.supabase.co'; 
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhtbnZld3Bmc2p2Y2N3Ym1vdXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMxODM3NTQsImV4cCI6MjA2ODc1OTc1NH0.u_cp0Of0xghqltjy2JEFvq1L23KN6msOzLZitZJelOk';
+        const supabase = createClient(supabaseUrl, supabaseKey);
+
+        const lista = document.getElementById('lista');
+
+        async function carregarProdutos() {
+            const { data, error } = await supabase
+                .from('produtos')
+                .select('produto, preço, descricao')
+                .order('id', { ascending: false });
+
+            if (error) {
+                lista.innerHTML = `<p style="color:red;">Erro ao carregar produtos: ${error.message}</p>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                lista.innerHTML = '<p>Nenhum produto cadastrado ainda.</p>';
+                return;
+            }
+
+            lista.innerHTML = '';
+            data.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'produto';
+                div.innerHTML = `
+                    <h3>${p.produto}</h3>
+                    <span class="preco">R$ ${parseFloat(p.preço).toFixed(2)}</span>
+                    <p class="descricao">${p.descricao}</p>
+                `;
+                lista.appendChild(div);
+            });
+        }
+
+        carregarProdutos();
+    </script>
+</body>
+</html>
