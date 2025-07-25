@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -42,6 +42,8 @@
       display: flex;
       gap: 14px;
       flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 24px;
     }
 
     .logout-btn {
@@ -117,7 +119,7 @@
     }
 
     #user-email {
-      margin-top: 32px;
+      margin-top: 24px;
       font-style: italic;
       color: #555;
       font-size: 1em;
@@ -133,29 +135,28 @@
         width: 100%;
         margin-top: 10px;
       }
-       
     }
   </style>
 </head>
 <body>
   <header>
     <div class="header-top">
-      
-       
-       <div class="menu-buttons">
-      </div>
-      <button id="logout" class="logout-btn">Entrar</button>
+      <button id="logout" class="logout-btn">Sair</button>
     </div>
     <h1 class="main-title">MENU PRINCIPAL</h1>
   </header>
 
   <main>
     <h2>Bem-vindo!</h2>
+
     <div class="menu-buttons">
-  
-    <a href="cadastro.html">➕ <span>Cadastrar Produto</span></a>
-     <a href="./produtos.html">📋 <span>Listar Produtos</span></a>
-       <a href="/categoria.html">🗂️ <span>Categorias</span></a>
+      <a href="cadastro.html">➕ <span>Cadastrar Produto</span></a>
+      <a href="produtos.html">📋 <span>Listar Produtos</span></a>
+      <a href="categoria.html">🗂️ <span>Gerenciar Categorias</span></a>
+      
+    </div>
+
+    <p id="user-email">Verificando login...</p>
   </main>
 
   <script type="module">
@@ -164,6 +165,8 @@
     const supabaseUrl = 'https://xmnvewpfsjvccwbmoura.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhtbnZld3Bmc2p2Y2N3Ym1vdXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMxODM3NTQsImV4cCI6MjA2ODc1OTc1NH0.u_cp0Of0xghqltjy2JEFvq1L23KN6msOzLZitZJelOk';
     const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const userEmail = document.getElementById('user-email');
 
     const checkUser = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
@@ -174,7 +177,9 @@
         return;
       }
 
-      document.getElementById('user-email').innerText = `Logado como: ${session.user.email}`;
+      const user = session.user;
+      const nome = user.user_metadata?.nome || user.email;
+      userEmail.innerText = `Logado como: ${nome}`;
     };
 
     document.getElementById('logout').addEventListener('click', async () => {

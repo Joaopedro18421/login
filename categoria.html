@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -24,12 +24,45 @@
       margin-right: auto;
       font-size: 18px;
       color: #444;
+      position: relative;
+    }
+    .categoria button {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #e11d48;
+      color: #fff;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
     }
     #msg {
       text-align: center;
       margin-top: 20px;
       color: #888;
       font-style: italic;
+    }
+    form {
+      max-width: 400px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    form input, form textarea, form button {
+      width: 100%;
+      margin-bottom: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
+    form button {
+      background-color: #2563eb;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
     }
     a {
       display: block;
@@ -39,15 +72,19 @@
       text-decoration: none;
       font-weight: bold;
     }
-    a:hover {
-      text-decoration: underline;
-    }
   </style>
 </head>
 <body>
 
   <h2>Categorias Cadastradas</h2>
-  <div id="lista-categorias"></div>
+
+  <form onsubmit="adicionarCategoria(event)">
+    <input type="text" id="nome" placeholder="Nome da Categoria" required />
+    <textarea id="descricao" placeholder="Descrição"></textarea>
+    <button type="submit">Adicionar Categoria</button>
+  </form>
+
+  <div id="listaCategorias"></div>
   <p id="msg"></p>
   <a href="menu.html">← Voltar ao Menu</a>
 
@@ -55,16 +92,16 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     const supabaseUrl = 'https://xmnvewpfsjvccwbmoura.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhtbnZld3Bmc2p2Y2N3Ym1vdXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMxODM3NTQsImV4cCI6MjA2ODc1OTc1NH0.u_cp0Of0xghqltjy2JEFvq1L23KN6msOzLZitZJelOk'; // Troque aqui
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InhtbnZld3Bmc2p2Y2N3Ym1vdXJhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMxODM3NTQsImV4cCI6MjA2ODc1OTc1NH0.u_cp0Of0xghqltjy2JEFvq1L23KN6msOzLZitZJelOk';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const listaCategorias = document.getElementById('lista-categorias');
+    const listaCategorias = document.getElementById('listaCategorias');
     const msg = document.getElementById('msg');
 
     async function carregarCategorias() {
       const { data, error } = await supabase
         .from('categorias')
-        .select('id, nome')
+        .select('id, nome, descricao')
         .order('nome', { ascending: true });
 
       if (error) {
@@ -84,10 +121,56 @@
       data.forEach(cat => {
         const div = document.createElement('div');
         div.className = 'categoria';
-        div.textContent = cat.nome;
+        div.innerHTML = `
+          <strong>${cat.nome}</strong><br/>
+          <small>${cat.descricao || 'Sem descrição.'}</small>
+          <button onclick="excluirCategoria(${cat.id})">Excluir</button>
+        `;
         listaCategorias.appendChild(div);
       });
     }
+
+    // Tornando funções visíveis no escopo global para o HTML (onclick)
+    window.adicionarCategoria = async function(event) {
+      event.preventDefault();
+      const nome = document.getElementById('nome').value.trim();
+      const descricao = document.getElementById('descricao').value.trim();
+
+      if (!nome) {
+        alert('Nome da categoria é obrigatório.');
+        return;
+      }
+
+      const { error } = await supabase
+        .from('categorias')
+        .insert([{ nome, descricao }]);
+
+      if (error) {
+        alert('Erro ao adicionar categoria: ' + error.message);
+        return;
+      }
+
+      document.getElementById('nome').value = '';
+      document.getElementById('descricao').value = '';
+      carregarCategorias();
+    };
+
+    window.excluirCategoria = async function(id) {
+      const confirmar = confirm('Deseja realmente excluir esta categoria?');
+      if (!confirmar) return;
+
+      const { error } = await supabase
+        .from('categorias')
+        .delete()
+        .eq('id', id);
+
+      if (error) {
+        alert('Erro ao excluir categoria: ' + error.message);
+        return;
+      }
+
+      carregarCategorias();
+    };
 
     carregarCategorias();
   </script>
